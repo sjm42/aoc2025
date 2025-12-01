@@ -68,8 +68,7 @@ impl Dial {
 
 fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
-    opts.finalize()?;
-    opts.start_pgm(env!("CARGO_BIN_NAME"));
+    opts.start_pgm(env!("CARGO_BIN_NAME"))?;
 
     let mut dial = Dial::default();
     for (n, line) in io::stdin().lock().lines().enumerate() {

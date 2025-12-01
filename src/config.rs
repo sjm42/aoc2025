@@ -34,7 +34,8 @@ impl OptsCommon {
         }
     }
 
-    pub fn start_pgm(&self, name: &str) {
+    pub fn start_pgm(&mut self, name: &str) -> anyhow::Result<()> {
+        self.finalize()?;
         tracing_subscriber::fmt()
             .with_max_level(self.get_loglevel())
             .with_target(false)
@@ -45,6 +46,7 @@ impl OptsCommon {
         debug!("Git commit: {}", env!("GIT_COMMIT"));
         debug!("Source timestamp: {}", env!("SOURCE_TIMESTAMP"));
         debug!("Compiler version: {}", env!("RUSTC_VERSION"));
+        Ok(())
     }
 }
 // EOF
