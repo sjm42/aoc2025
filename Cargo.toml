@@ -2,7 +2,7 @@
 
 [package]
 name = "aoc2025"
-version = "12.2.1"
+version = "12.2.2"
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 description = "Advent of Code 2025"
 repository = "https://github.com/sjm42/aoc2025"
