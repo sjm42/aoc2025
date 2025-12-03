@@ -78,18 +78,21 @@ fn num_len(n: u64) -> u32 {
     debug!("num_len({n}) = {len}");
     len
 }
+
 fn num_is_even_len(n: u64) -> bool {
     let is_even_len = num_len(n).is_multiple_of(2);
     debug!("is_even_len({n}) = {is_even_len}");
     is_even_len
 }
 
+#[allow(dead_code)]
 fn len_smallest(len: u32) -> u64 {
     // let smallest = if len <= 1 { 0 } else { 10u64.pow(len - 1) };
     let smallest = 10u64.pow(len - 1);
     debug!("smallest({len}) = {smallest}");
     smallest
 }
+
 fn len_largest(len: u32) -> u64 {
     // let largest = if len <= 1 { 9 } else { 10u64.pow(len) - 1 };
     let largest = 10u64.pow(len) - 1;
@@ -122,5 +125,4 @@ fn is_silly2(id: &str) -> bool {
     }
     false
 }
-
 // EOF
