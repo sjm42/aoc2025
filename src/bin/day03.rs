@@ -8,16 +8,17 @@ fn main() -> anyhow::Result<()> {
     let mut opts = OptsCommon::parse();
     opts.start_pgm(env!("CARGO_BIN_NAME"))?;
 
-    let mut batts = Vec::new();
-    for line in io::stdin().lock().lines() {
-        let line = line?;
-        let nums = line
-            .chars()
-            .filter_map(|c| c.to_digit(10))
-            .map(|n| n as u8)
-            .collect::<Vec<u8>>();
-        batts.push(nums);
-    }
+    let batts = io::stdin()
+        .lock()
+        .lines()
+        .map_while(Result::ok)
+        .map(|line| {
+            line.chars()
+                .filter_map(|c| c.to_digit(10))
+                .map(|n| n as u8)
+                .collect::<Vec<u8>>()
+        })
+        .collect::<Vec<_>>();
 
     // part 1
 
