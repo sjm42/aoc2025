@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
     // part 1
 
     let mut accessible_count = 0;
-    let mut rows_1 = rows.clone();
+    let mut rows1 = rows.clone();
 
     (0..size_y).for_each(|y| {
         (0..size_x)
@@ -46,24 +46,74 @@ fn main() -> anyhow::Result<()> {
                     })
                     .count();
                 if n_neighbors < NEIGHBOR_LIMIT {
-                    info!("Accessible: ({x}, {y})");
-                    rows_1[y as usize][x as usize] = 'X';
+                    debug!("Accessible: ({x}, {y})");
+                    rows1[y as usize][x as usize] = 'X';
                     accessible_count += 1;
                 }
             })
     });
 
     info!("Original:");
-    rows.iter().for_each(|row| {
-        info!("{}", row.iter().collect::<String>());
-    });
+    print_map(&rows);
 
     info!("Accessible marked:");
-    rows_1.iter().for_each(|row| {
-        info!("{}", row.iter().collect::<String>());
-    });
+    print_map(&rows1);
     println!("Part 1: {}", accessible_count);
 
+    // part 2
+
+    let mut removed_count = 0;
+    let mut rows2 = rows.clone();
+    let mut rounds = 0;
+    loop {
+        rounds += 1;
+        let mut to_remove: Vec<(i32, i32)> = Vec::new();
+        (0..size_y).for_each(|y| {
+            (0..size_x)
+                .filter(|&x| rows2[y as usize][x as usize] == '@')
+                .for_each(|x| {
+                    let n_neighbors = ADJACENT
+                        .iter()
+                        .filter(|[dx, dy]| {
+                            let (check_x, check_y) = (x + dx, y + dy);
+                            (0..size_x).contains(&check_x)
+                                && (0..size_y).contains(&check_y)
+                                && rows2[check_y as usize][check_x as usize]
+                                    == '@'
+                        })
+                        .count();
+                    if n_neighbors < NEIGHBOR_LIMIT {
+                        debug!("Accessible: ({x}, {y})");
+                        to_remove.push((x, y));
+                    }
+                })
+        });
+
+        to_remove
+            .iter()
+            .for_each(|(x, y)| rows2[*y as usize][*x as usize] = 'X');
+        let removed = to_remove.len();
+        if removed == 0 {
+            break;
+        }
+        removed_count += removed;
+    }
+
+    info!("Removed marked:");
+    print_map(&rows2);
+    println!("Part 2: {removed_count} took {rounds} rounds");
+
     Ok(())
+}
+
+fn print_map(map: &[Vec<char>]) {
+    map.iter().for_each(|row| {
+        info!(
+            "{}",
+            row.iter()
+                .map(|&c| [c, ' '].iter().collect::<String>())
+                .collect::<String>()
+        );
+    });
 }
 // EOF
