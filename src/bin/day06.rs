@@ -8,17 +8,18 @@ fn main() -> anyhow::Result<()> {
 
     let mut nums: Vec<Vec<i64>> = Vec::new();
     let mut ops = Vec::new();
+    let mut line_len = None;
     let mut n_items = None;
+    let mut sheet = Vec::new();
     for (n, line) in io::stdin().lock().lines().enumerate() {
-        let line = line?;
+        let mut line = line?;
         let items = line.split_whitespace().collect::<Vec<&str>>();
         match n_items {
             Some(n_items) => {
                 if items.len() != n_items {
                     bail!(
-                        "Invalid number of items ({}) on line #{}",
-                        items.len(),
-                        n
+                        "Invalid number of items ({}) on line #{n}",
+                        items.len()
                     );
                 }
             }
@@ -37,19 +38,63 @@ fn main() -> anyhow::Result<()> {
                 );
             }
         }
+
+        match line_len {
+            Some(line_len) => {
+                if line.len() != line_len {
+                    bail!("Invalid line length ({}) on line #{n}", line.len());
+                }
+            }
+            None => line_len = Some(line.len()),
+        }
+
+        line.push(' ');
+        sheet.push(line.into_bytes());
     }
+    let sheet_ops = sheet.pop().unwrap_or_default();
+
     debug!("nums: {nums:?}");
     debug!("ops: {ops:?}");
 
-    let mut total = 0;
+    let mut total1 = 0;
     for (col, op) in ops.iter().enumerate() {
-        total += match op.as_str() {
+        total1 += match op.as_str() {
             "+" => (0..nums.len()).map(|i| nums[i][col]).sum(),
             "*" => (0..nums.len()).map(|i| nums[i][col]).product(),
             _ => 0,
         };
     }
-    println!("Parti 1 total: {total}");
+    println!("Part1 total: {total1}");
+
+    debug!("Sheet: {sheet:?}");
+    debug!("Sheet ops: {sheet_ops:?}");
+
+    let (mut total2, mut op, mut values) = (0, b' ', Vec::new());
+    for col in 0..sheet_ops.len() {
+        match sheet_ops[col] {
+            b'+' | b'*' => op = sheet_ops[col],
+            _ => {}
+        }
+        let value_b = sheet
+            .iter()
+            .filter_map(|row| match row[col] {
+                b'0'..=b'9' => Some(row[col]),
+                _ => None,
+            })
+            .collect::<Vec<u8>>();
+        if value_b.is_empty() {
+            // we are at an empty separator column, now process what we have collected
+            total2 += match op {
+                b'+' => values.iter().sum(),
+                b'*' => values.iter().product(),
+                _ => 0,
+            };
+            values.clear();
+        } else {
+            values.push(String::from_utf8_lossy(&value_b).parse::<i64>()?);
+        }
+    }
+    println!("Part2 total: {total2}");
 
     Ok(())
 }
