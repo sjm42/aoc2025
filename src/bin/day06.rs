@@ -71,9 +71,8 @@ fn main() -> anyhow::Result<()> {
 
     let (mut total2, mut op, mut values) = (0, b' ', Vec::new());
     for col in 0..sheet_ops.len() {
-        match sheet_ops[col] {
-            b'+' | b'*' => op = sheet_ops[col],
-            _ => {}
+        if let b'+' | b'*' = sheet_ops[col] {
+            op = sheet_ops[col];
         }
         let value_b = sheet
             .iter()
