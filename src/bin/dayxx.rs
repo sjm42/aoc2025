@@ -7,7 +7,9 @@ fn main() -> anyhow::Result<()> {
     opts.start_pgm(env!("CARGO_BIN_NAME"))?;
 
     #[allow(unused_variables)]
-    for (n, line) in io::stdin().lock().lines().enumerate() {}
+    for (n, line) in io::stdin().lock().lines().enumerate() {
+        let line = line?;
+    }
 
     Ok(())
 }
