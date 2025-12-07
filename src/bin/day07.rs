@@ -30,48 +30,52 @@ fn main() -> anyhow::Result<()> {
     debug!("Sanity check passed.");
 
     let mut n_splits = 0;
-    let mut beams_pos: Vec<i32> = Vec::new();
-    for (row_n, row) in rows.iter_mut().enumerate() {
-        // convert 'S' to '|'
-        row.iter_mut().filter(|c| **c == 'S').for_each(|c| *c = '|');
-        let row_sz = row.len() as i32;
+    let mut beams = vec![0; size_x as usize];
 
+    rows[0] // initialize beams, find 'S'
+        .iter_mut()
+        .enumerate()
+        .filter(|(_i, c)| **c == 'S')
+        .for_each(|(i, c)| {
+            *c = '|';
+            beams[i] = 1;
+        });
+
+    debug!("Rows at start:");
+    debug_print_rows(&rows);
+
+    for row in rows.iter_mut() {
         // process beam positions from previous row
-        let mut new_splits = 0;
-        for &pos in beams_pos.iter() {
-            if row[pos as usize] == '.' {
-                row[pos as usize] = '|'; // no splitter, continue beam
-            } else if row[pos as usize] == '^' {
-                // we have a splitter
-                new_splits += 1;
+        for pos in 0..beams.len() {
+            if beams[pos] == 0 {
+                continue;
+            }
+
+            if row[pos] == '^' {
+                n_splits += 1;
+
                 for d in [-1, 1] {
-                    let new_pos = pos + d;
-                    let new_pos = if new_pos < 0 || new_pos >= row_sz {
-                        continue; // out of bounds
-                    } else {
+                    let new_pos = pos as i32 + d;
+                    let new_pos = if (0..size_x).contains(&new_pos) {
                         new_pos as usize // potential split
+                    } else {
+                        continue; // out of bounds
                     };
-                    if row[new_pos] == '.' {
-                        row[new_pos] = '|';
-                    }
+
+                    beams[new_pos] += beams[pos];
+                    row[new_pos] = '|';
                 }
+                beams[pos] = 0;
+            } else {
+                row[pos] = '|'; // no splitter, continue beam
             }
         }
-        debug!("Row #{row_n} New splits: {new_splits}");
-        n_splits += new_splits;
-
-        // store beam positions from this line for next round
-        beams_pos = row
-            .iter()
-            .enumerate()
-            .filter_map(
-                |(pos, c)| if *c == '|' { Some(pos as i32) } else { None },
-            )
-            .collect();
     }
     debug!("Rows after processing:");
     debug_print_rows(&rows);
+
     println!("part 1: splits {n_splits}");
+    println!("part 2: beams {}", beams.iter().sum::<u64>());
 
     Ok(())
 }
